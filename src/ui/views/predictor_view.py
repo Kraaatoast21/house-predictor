@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
 from src.database import save_prediction
-from src.model import predict_price, get_subdivisions
+from src.model import predict_price, get_subdivisions, get_model_metrics
 
 class PredictorView(ctk.CTkFrame):
     def __init__(self, master, user_id, colors, subdivisions_cache):
@@ -19,8 +19,11 @@ class PredictorView(ctk.CTkFrame):
         status_f = ctk.CTkFrame(self, fg_color=self.colors["surface"], height=50, corner_radius=12, border_width=1, border_color=self.colors["secondary"])
         status_f.pack(fill="x", pady=(0, 20))
         status_f.pack_propagate(False)
+        
+        r2, rmse = get_model_metrics()
+        
         ctk.CTkLabel(status_f, text="⚡ NEURAL ENGINE: ACTIVE", font=("Segoe UI", 10, "bold"), text_color=self.colors["primary"]).pack(side="left", padx=20)
-        ctk.CTkLabel(status_f, text="ACCURACY: 89.4%  |  RMSE: ₱12.4K  |  NODE: CLUSTER-01", font=("Segoe UI", 10), text_color=self.colors["text"]).pack(side="right", padx=20)
+        ctk.CTkLabel(status_f, text=f"ACCURACY: {r2*100:.1f}%  |  RMSE: ₱{rmse/1000:.1f}K  |  NODE: CLUSTER-01", font=("Segoe UI", 10), text_color=self.colors["text"]).pack(side="right", padx=20)
 
         ctk.CTkLabel(self, text="Enter property attributes to generate a neural market estimate.", font=("Segoe UI", 14), text_color=self.colors["text"]).pack(anchor="w", pady=(0, 20))
 
