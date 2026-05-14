@@ -80,3 +80,9 @@ class DataTable(ctk.CTkFrame):
         sel = self.tree.selection()
         if not sel: return None
         return self.tree.item(sel[0])["values"]
+
+    def delete_selected_row(self):
+        sel = self.tree.selection()
+        if sel:
+            self.tree.delete(sel[0])
+

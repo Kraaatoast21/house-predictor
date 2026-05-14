@@ -85,6 +85,9 @@ class PredictorView(ctk.CTkFrame):
                 self._reset_btn()
                 return messagebox.showwarning("Spatial Error", "Land size below standard density.")
             
+
+
+            
             v_ratio = floor / land
             est_levels = max(1, round(v_ratio + 0.4))
             
@@ -128,7 +131,15 @@ class PredictorView(ctk.CTkFrame):
                 ctk.CTkLabel(f, text=l, font=("Segoe UI", 9, "bold"), text_color=self.colors["text"]).pack()
                 ctk.CTkLabel(f, text=v, font=("Segoe UI", 16, "bold"), text_color=self.colors["text_bright"]).pack()
 
-            save_prediction(self.user_id, bed, bath, floor, land, sub, year, p)
+            save_record = True
+            if floor > land:
+                save_record = messagebox.askyesno("Spatial Logic", "Floor area exceeds land size (Multi-story). Save this result to your personal archive?")
+            
+            if save_record:
+                save_prediction(self.user_id, bed, bath, floor, land, sub, year, p)
+            else:
+                ctk.CTkLabel(self.analysis_f, text="⚠️ RECORD NOT SAVED TO ARCHIVE", font=("Segoe UI", 9, "bold"), text_color="#f59e0b").pack(pady=(0, 20))
+
         except Exception as e: messagebox.showerror("Error", str(e))
         finally:
             self._processing = False

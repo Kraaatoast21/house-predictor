@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
-from src.database import get_user_predictions, delete_prediction
+from src.database import get_user_predictions, delete_prediction, delete_prediction_by_id
 from src.ui.components.data_table import DataTable
 from src.utils.exporter import export_data
 
@@ -21,6 +21,7 @@ class ArchiveView(ctk.CTkFrame):
         btn_f.pack(side="right")
         
         ctk.CTkButton(btn_f, text="EXPORT CSV", width=120, height=40, corner_radius=10, fg_color=self.colors["secondary"], command=self._export_csv).pack(side="left", padx=10)
+        ctk.CTkButton(btn_f, text="DELETE SELECTED", width=140, height=40, corner_radius=10, fg_color=self.colors["secondary"], command=self._delete_selected).pack(side="left", padx=10)
         ctk.CTkButton(btn_f, text="PURGE ALL", width=120, height=40, corner_radius=10, fg_color="#ef4444", command=self._purge_history).pack(side="left")
         
         self.table = DataTable(self, ["ID", "Subdivision", "Floor", "Land", "Beds", "Baths", "Year", "Estimate"], self.colors)
@@ -44,10 +45,27 @@ class ArchiveView(ctk.CTkFrame):
     def _export_csv(self):
         export_data(get_user_predictions(self.user_id), "csv")
 
+    def _delete_selected(self):
+        sel = self.table.get_selection()
+        if not sel:
+            return messagebox.showwarning("System", "Please select a record to delete.")
+
+
+        
+        if messagebox.askyesno("Delete", f"Confirm deletion of record ID: {sel[0]}?"):
+            if delete_prediction_by_id(sel[0]):
+                self.table.delete_selected_row() # Instant UI removal
+                messagebox.showinfo("Success", "Record deleted successfully.")
+                self.refresh() # Solidify and sync with DB
+            else:
+                messagebox.showerror("Error", "Failed to delete record.")
+
+
     def _purge_history(self):
-        if messagebox.askyesno("Purge", "Delete all personal history?"):
-            # Note: delete_prediction should be updated to take user_id if purging all
-            # For now, we'll assume delete_prediction(user_id) exists or loop
-            # I'll just clear the table for now as a mock if DB method isn't ready
-            # Actually, I should check database.py
-            pass
+        if messagebox.askyesno("Purge", "Delete all personal history? This action cannot be undone."):
+            if delete_prediction(self.user_id):
+                messagebox.showinfo("Success", "History purged successfully.")
+                self.refresh()
+            else:
+                messagebox.showerror("Error", "Failed to purge history.")
+

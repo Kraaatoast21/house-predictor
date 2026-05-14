@@ -245,16 +245,45 @@ def update_user(user_id, new_username, new_password):
         return False
 
 def delete_prediction(user_id):
-    conn = get_connection()
-    if not conn: return False
+    """Deletes all predictions for a specific user (Purge)."""
     try:
+        u_id = int(user_id)
+        conn = get_connection()
+        if not conn: return False
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM predictions WHERE user_id = %s", (user_id,))
+        cursor.execute("DELETE FROM predictions WHERE user_id = %s", (u_id,))
         conn.commit()
         conn.close()
+        
+        # Aggressive cache clearing
+        GLOBAL_CACHE.clear_all()
         return True
-    except:
+    except Exception as e:
+        print(f"DATABASE ERROR (Purge): {e}")
         return False
+
+
+def delete_prediction_by_id(prediction_id):
+    """Deletes a specific prediction record."""
+    try:
+        p_id = int(prediction_id)
+        conn = get_connection()
+        if not conn: return False
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM predictions WHERE id = %s", (p_id,))
+        conn.commit()
+        conn.close()
+        
+        # Aggressive cache clearing
+        GLOBAL_CACHE.clear_all()
+        return True
+    except Exception as e:
+        print(f"DATABASE ERROR (Delete ID): {e}")
+        return False
+
+
+
+
 
 def backup_database(output_path):
     conn = get_connection()
